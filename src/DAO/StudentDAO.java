@@ -190,14 +190,18 @@ public class StudentDAO {
         return resultSet;
     }
 //-------------------------------------------------
-    //TODO
-    // Method to retrieve search data
+    // Method to retrieve search data - SECURE VERSION
     public ResultSet getStudentSearch(String text) {
         try {
             String query = "SELECT * FROM student " +
-                    "WHERE StudentID LIKE '%"+text+"%' OR Name LIKE '%"+text+"%' OR " +
-                    "Email LIKE '%"+text+"%'";
-            resultSet = statement.executeQuery(query);
+                    "WHERE StudentID LIKE ? OR Name LIKE ? OR " +
+                    "Email LIKE ?";
+            prepStatement = conn.prepareStatement(query);
+            String searchPattern = "%" + text + "%";
+            prepStatement.setString(1, searchPattern);
+            prepStatement.setString(2, searchPattern);
+            prepStatement.setString(3, searchPattern);
+            resultSet = prepStatement.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
         }

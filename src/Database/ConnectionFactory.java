@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
@@ -22,11 +23,14 @@ public class ConnectionFactory {
 
     public ConnectionFactory(){
         try {
-
             prop = new Properties();
-            prop.loadFromXML(new FileInputStream("/Users/aayushkumar/Desktop/IIITD_Project/University-SAP/SAP/src/Database/DBCredentials.xml"));
+            // Use relative path for better portability
+            String configPath = System.getProperty("user.dir") + "/lib/DBCredentials.xml";
+            prop.loadFromXML(new FileInputStream(configPath));
             //System.out.println("XML file loaded");
         } catch (IOException e) {
+            System.err.println("Could not load database credentials. Please check: " + 
+                             System.getProperty("user.dir") + "/lib/DBCredentials.xml");
             e.printStackTrace();
         }
         username = prop.getProperty("username");
@@ -61,18 +65,16 @@ public class ConnectionFactory {
 
 
 
-    //Login verification method
+    //Login verification method - SECURE VERSION
     public boolean checkLogin(String username, String password, String userType){
-        String query = "SELECT * FROM users WHERE username='"
-                + username
-                + "' AND password='"
-                + password
-                + "' AND usertype='"
-                + userType
-                + "' LIMIT 1";
+        String query = "SELECT * FROM users WHERE username=? AND password=? AND usertype=? LIMIT 1";
 
         try {
-            resultSet = statement.executeQuery(query);
+            PreparedStatement prepStatement = conn.prepareStatement(query);
+            prepStatement.setString(1, username);
+            prepStatement.setString(2, password);
+            prepStatement.setString(3, userType);
+            ResultSet resultSet = prepStatement.executeQuery();
             if(resultSet.next()) return true;
         } catch (Exception ex) {
             ex.printStackTrace();

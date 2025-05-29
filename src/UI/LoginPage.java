@@ -6,6 +6,7 @@
 package UI;
 
 import DTO.UserDTO;
+import DTO.ValidationUtils;
 import Database.ConnectionFactory;
 
 import java.math.BigInteger;
@@ -155,9 +156,16 @@ public class LoginPage extends javax.swing.JFrame {
     String userType;
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         String username = userText.getText();
-        String password = passText.getText();
-        //TODO Password encryption to be added later:
-        //String password = encryptPass(pass);
+        String pass = new String(passText.getPassword());
+        
+        // Basic input validation to prevent injection attacks
+        if (!ValidationUtils.isValidInput(username) || !ValidationUtils.isValidInput(pass)) {
+            JOptionPane.showMessageDialog(null, "Invalid characters detected in login credentials.");
+            return;
+        }
+        
+        // Enable password encryption for security
+        String password = encryptPass(pass);
         userType = (String)jComboBox1.getSelectedItem();
 
         if (new ConnectionFactory().checkLogin(username, password, userType)){
